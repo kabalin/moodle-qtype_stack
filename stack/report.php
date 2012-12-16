@@ -93,10 +93,10 @@ class quiz_stack_report extends quiz_attempts_report {
         $question = question_bank::load_question($this->questionid);
         $this->inputs = array_keys($question->inputs);
         $this->prts = array_keys($question->prts);
-        
+
         // TODO: change this to be a list of all *deployed* notes, not just those *used*.
         $notes = array();
-        foreach($this->attempts as $qattempt) {
+        foreach ($this->attempts as $qattempt) {
             $q = $qattempt->get_question();
             $notes[$q->get_question_summary()] = true;
         }
@@ -106,29 +106,29 @@ class quiz_stack_report extends quiz_attempts_report {
         $results = $this->input_report();
         list ($results_valid, $results_invalid) = $this->input_report_separate();
         // Display the results
-        foreach($this->notes as $note) {
+        foreach ($this->notes as $note) {
             echo html_writer::tag('h2', $note);
 
             $inputstable = new html_table();
             $inputstable->attributes['class'] = 'generaltable stacktestsuite';
             $inputstable->head = array_merge(array(stack_string('questionreportingsummary'), '', stack_string('questionreportingscore')), $this->prts);
-            foreach($results[$note] as $dsummary => $summary) {
-                foreach($summary as $key => $res) {
+            foreach ($results[$note] as $dsummary => $summary) {
+                foreach ($summary as $key => $res) {
                     $inputstable->data[] = array_merge(array($dsummary, $res['count'], $res['fraction']), $res['answernotes']);
                 }
             }
             echo html_writer::table($inputstable);
 
             // Separate out inputs and look at validity.
-            foreach($this->inputs as $input) {
+            foreach ($this->inputs as $input) {
                 $inputstable = new html_table();
                 $inputstable->attributes['class'] = 'generaltable stacktestsuite';
                 $inputstable->head = array($input, '', '');
-                foreach($results_valid[$note][$input] as $key => $res) {
+                foreach ($results_valid[$note][$input] as $key => $res) {
                     $inputstable->data[] = array($key, $res, get_string('inputstatusnamevalid', 'qtype_stack'));
                     $inputstable->rowclasses[] = 'pass';
                 }
-                foreach($results_invalid[$note][$input] as $key => $res) {
+                foreach ($results_invalid[$note][$input] as $key => $res) {
                     $inputstable->data[] = array($key, $res, get_string('inputstatusnameinvalid', 'qtype_stack'));
                     $inputstable->rowclasses[] = 'fail';
                 }
@@ -139,13 +139,13 @@ class quiz_stack_report extends quiz_attempts_report {
 
     }
 
-    /* 
+    /*
      * This function counts the number of response summaries per question note.
      */
     private function input_report() {
 
         $results = array();
-        foreach($this->notes as $note) {
+        foreach ($this->notes as $note) {
             $results[$note] = array();
         }
 
@@ -155,12 +155,12 @@ class quiz_stack_report extends quiz_attempts_report {
 
             for ($i = 0; $i < $qattempt->get_num_steps(); $i++) {
                 $step = $qattempt->get_step($i);
-                if($data = $this->nontrivial_response_step($qattempt, $i)) {
+                if ($data = $this->nontrivial_response_step($qattempt, $i)) {
                     $fraction = (string) $step->get_fraction();
                     $summary = $question->summarise_response($data);
 
                     $answernotes = array();
-                    foreach($this->prts as $prt) {
+                    foreach ($this->prts as $prt) {
                         $prt_object = $question->get_prt_result($prt, $data, true);
                         $answernotes[$prt] = implode(' | ', $prt_object->__get('answernotes'));
                     }
@@ -186,15 +186,15 @@ class quiz_stack_report extends quiz_attempts_report {
         return $results;
     }
 
-    /* 
+    /*
      * Counts the number of response to each input and records their validity.
      */
     private function input_report_separate() {
 
         $results = array();
         $validity = array();
-        foreach($this->notes as $note) {
-            foreach($this->inputs as $input) {
+        foreach ($this->notes as $note) {
+            foreach ($this->inputs as $input) {
                 $results[$note][$input] = array();
             }
         }
@@ -204,9 +204,9 @@ class quiz_stack_report extends quiz_attempts_report {
             $note = $question->get_question_summary();
 
             for ($i = 0; $i < $qattempt->get_num_steps(); $i++) {
-                if($data = $this->nontrivial_response_step($qattempt, $i)) {
+                if ($data = $this->nontrivial_response_step($qattempt, $i)) {
                     $summary = $question->summarise_response_data($data);
-                    foreach($this->inputs as $input) {
+                    foreach ($this->inputs as $input) {
                         if (array_key_exists($input, $summary)) {
                             if ('' != $data[$input]) {
                                 if (array_key_exists($data[$input],  $results[$note][$input])) {
@@ -215,15 +215,15 @@ class quiz_stack_report extends quiz_attempts_report {
                                     $results[$note][$input][$data[$input]] = 1;
                                 }
                             }
-                        $validity[$note][$input][$data[$input]] = $summary[$input];
+                            $validity[$note][$input][$data[$input]] = $summary[$input];
                         }
                     }
                 }
             }
         }
 
-        foreach($this->notes as $note) {
-            foreach($this->inputs as $input) {
+        foreach ($this->notes as $note) {
+            foreach ($this->inputs as $input) {
                 arsort($results[$note][$input]);
             }
         }
@@ -231,11 +231,11 @@ class quiz_stack_report extends quiz_attempts_report {
         // Split into valid and invalid responses.
         $results_valid = array();
         $results_invalid = array();
-        foreach($this->notes as $note) {
-            foreach($this->inputs as $input) {
+        foreach ($this->notes as $note) {
+            foreach ($this->inputs as $input) {
                 $results_valid[$note][$input] = array();
                 $results_invalid[$note][$input] = array();
-                foreach($results[$note][$input] as $key => $res) {
+                foreach ($results[$note][$input] as $key => $res) {
                     if ('valid' == $validity[$note][$input][$key]) {
                         $results_valid[$note][$input][$key] = $res;
                     } else {
@@ -244,7 +244,6 @@ class quiz_stack_report extends quiz_attempts_report {
                 }
             }
         }
-
 
         return array($results_valid, $results_invalid);
     }
