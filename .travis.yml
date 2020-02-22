@@ -1,18 +1,13 @@
 language: php
 
-dist: bionic
-sudo: required
-
 services:
-  mysql
+  - mysql
+  - docker
 
 addons:
-  firefox: "47.0.1"
   postgresql: "9.6"
   apt:
     packages:
-      - openjdk-8-jre-headless
-      - chromium-chromedriver
       - maxima
       - maxima-share
       - texinfo
@@ -44,7 +39,13 @@ matrix:
 #      env: TASK=BEHAT          MOODLE_BRANCH=MOODLE_35_STABLE   DB=mysqli
 #
     - php: 7.2
-      env: TASK=BEHAT          MOODLE_BRANCH=MOODLE_37_STABLE   DB=pgsql
+      env:
+        - TASK=BEHAT
+        - MOODLE_BRANCH=MOODLE_37_STABLE
+        - DB=pgsql
+        # This prevents starting selenium and php servers using moodle-plugin-ci
+        # in-built functionality to avoid current breakage.
+        - MOODLE_START_BEHAT_SERVERS=NO
 
 #    - php: 7.3
 #      env: TASK=BEHAT          MOODLE_BRANCH=MOODLE_38_STABLE   DB=mysqli
@@ -94,6 +95,12 @@ install:
   - maxima --list-avail
   - cat ./moodle/config.php
   - echo 'ATAlgEquiv(x^2-1,(x-1)*(x+1));quit();' | timeout --kill-after=10s 10s /home/travis/build/maxima_opt_auto -eval '(cl-user::run)'
+
+  # For Behat: start Selenium Standalone server using docker.
+  - docker run -d -p 127.0.0.1:4444:4444 --net=host -v /dev/shm:/dev/shm selenium/standalone-chrome:3
+  # ... and start php built-in server.
+  - php -S localhost:8000 -t $HOME/build/moodle > /dev/null 2>&1 &
+  - sleep 10
 
 script:
   # Run all the PHP unit tests.
