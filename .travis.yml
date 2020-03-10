@@ -97,7 +97,7 @@ install:
   - echo 'ATAlgEquiv(x^2-1,(x-1)*(x+1));quit();' | timeout --kill-after=10s 10s /home/travis/build/maxima_opt_auto -eval '(cl-user::run)'
 
   # For Behat: start Selenium Standalone server using docker.
-  - docker run -d -p 127.0.0.1:4444:4444 --net=host -v /dev/shm:/dev/shm selenium/standalone-chrome:3
+  - docker run -d -p 4444:4444 --net=host -v /dev/shm:/dev/shm -v $HOME/build/moodle:$HOME/build/moodle selenium/standalone-chrome:3
   # ... and start php built-in server.
   - php -S localhost:8000 -t $HOME/build/moodle > /dev/null 2>&1 &
   - sleep 10
